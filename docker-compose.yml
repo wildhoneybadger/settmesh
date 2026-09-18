@@ -1,0 +1,34 @@
+services:
+  server:
+    build:
+      context: ./server
+    # Pas de port publié vers l'hôte : le serveur n'est joignable que depuis
+    # nginx via le réseau interne Docker. Tout le trafic externe passe par TLS.
+    environment:
+      PORT: "8080"
+      DB_PATH: "/data/settmesh.db"
+      FILES_DIR: "/data/files"
+      # Jeton requis pour appeler les routes /admin/*. Sans lui, ces routes
+      # refusent toute requête. À définir via un fichier .env (non versionné).
+      ADMIN_TOKEN: "${ADMIN_TOKEN:-}"
+      INVITE_TTL_HOURS: "72"
+    volumes:
+      - settmesh-data:/data
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    depends_on:
+      - server
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      # Certificats TLS : dossier hôte séparé, en dehors des conteneurs.
+      # Doit contenir fullchain.pem et privkey.pem (voir nginx/conf.d/settmesh.conf).
+      - ./certs:/etc/nginx/certs:ro
+    restart: unless-stopped
+
+volumes:
+  settmesh-data:

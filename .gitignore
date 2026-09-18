@@ -1,0 +1,18 @@
+# Go
+server/settmesh-server
+server/data/
+
+# Env
+.env
+
+# Certificats TLS (fournis par l'hébergeur, jamais commités)
+certs/*
+!certs/.gitkeep
+
+# Node / React Native
+client/node_modules/
+client/.expo/
+client/*.log
+
+# OS
+.DS_Store
